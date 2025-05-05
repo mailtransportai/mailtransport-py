@@ -12,17 +12,19 @@ class MailClient:
     """
     
     def Mail(self,
-             to_emails=None,
-             from_email=None,
-             subject=None,
-             html=None,
-             cc=[],
-             bcc=[],
-             text=None,
-             variables={},
-             templateId=None,
-             replyTo=None,
-             inReplyTo=None):
+             to_emails: list=None,
+             from_email: str=None,
+             subject: str=None,
+             html: str=None,
+             cc: list=[],
+             bcc: list=[],
+             text: str=None,
+             variables: dict={},
+             template_id: str=None,
+             reply_to: list=None,
+             headers: dict={},
+             attachments: list = None,
+             in_reply_to: str=None):
 
         if self.is_valid_email_list(to_emails, 'to_emails'):
             self.to = to_emails
@@ -33,12 +35,13 @@ class MailClient:
         if self.is_valid_email_list(bcc, 'bcc'):    
             self.bcc=bcc
         self.from_email = from_email
-        self.attachments = []
+        self.attachments = attachments
         self.text = text
         self.variables = variables
-        self.templateId = templateId
-        self.replyTo = replyTo
-        self.inReplyTo = inReplyTo
+        self.templateId = template_id
+        self.replyTo = reply_to
+        self.inReplyTo = in_reply_to
+        self.headers = headers
         
         return self
     
@@ -90,7 +93,6 @@ class MailClient:
         mimetype to DEFAULT_ATTACHMENT_MIME_TYPE and don't decode the content.
         """
         if isinstance(filename, MIMEBase):
-            print('filename, >>>>>>>>>>???>>>>>>>>>>')
             if content is not None or mimetype is not None:
                 raise ValueError(
                     "content and mimetype must not be given when a MIMEBase "
@@ -127,6 +129,11 @@ class MailClient:
             raise MailTransportValidationError({"error": "Html or text is required if the templateId is not provided"})
 
 
+    def raise_or_fail_silently(self, data, fail_silently):
+        if fail_silently:
+            return data
+        raise MailTransportAPIError({"error": data})
+
     def send(self, fail_silently=False):
         """
         Send the email with attachments.
@@ -137,6 +144,7 @@ class MailClient:
         self.validate()
         data = {
             "to": self.to,
+            "from_email": self.from_email,
             "subject": self.subject,
             "html": self.html,
             "cc": self.cc,
@@ -145,7 +153,8 @@ class MailClient:
             "variables": self.variables,
             "templateId": self.templateId,
             "replyTo": self.replyTo,
-            "inReplyTo": self.inReplyTo
+            "inReplyTo": self.inReplyTo,
+            "headers": self.headers
         }
 
         # Prepare files for upload
@@ -155,9 +164,11 @@ class MailClient:
         response = requests.post(url, headers=headers, data=data, files=files)
 
         # Handle the response
-        if response.ok:
-            return response.json()
-        else:
-            if not fail_silently:
-                raise MailTransportAPIError({"error": f""})
-            return False
+        try:
+            ok = response.ok
+            resp_data =response.json()
+            if ok:
+                return resp_data
+            return self.raise_or_fail_silently(resp_data, fail_silently)
+        except Exception as e:
+            return self.raise_or_fail_silently(str(e), fail_silently)

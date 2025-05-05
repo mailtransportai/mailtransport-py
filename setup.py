@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="mailtransport",
-    version="0.1.0",
+    version="0.1.5",
     author="mailtransportai",
     author_email="support@mailtransportai.com",
     description="A Python package for managing email transport.",

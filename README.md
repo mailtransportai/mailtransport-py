@@ -89,7 +89,7 @@ You can use templates and pass dynamic variables for personalized emails:
 email_instance = transport.Mail(
     to_emails=['recipient@example.com'],
     from_email="noreply@company.com",
-    templateId="template_12345",
+    template_id="template_12345",
     variables={"name": "John Doe", "order_id": "123456"}
 )
 
@@ -106,10 +106,58 @@ email_instance = transport.Mail(
     html="<b>This email has CC and BCC recipients.</b>",
     cc=['cc@example.com'],
     bcc=['bcc@example.com'],
-    replyTo="replyto@example.com"
+    reply_to="replyto@example.com"
 )
 
 email_instance.send()
+```
+
+## Identity Management
+
+The `IdentityClient` allows you to manage identities (e.g., domains or email addresses) for your email transport.
+
+### Create an Identity
+
+```python
+from mailtransport import MailTransportClient
+
+# Initialize the client with your API key
+transport = MailTransportClient(api_key="your_api_key")
+
+response = transport.identity.create(domain_name="example.com")
+print(response)
+```
+
+### Get an Identity
+
+```python
+identity_id = "12345"
+response = transport.identity.get(identity_id)
+print(response)
+```
+
+### List All Identities
+
+```python
+response = transport.identity.list()
+print(response)
+```
+
+
+### Delete an Identity
+
+```python
+identity_id = "12345"
+response = transport.identity.delete(identity_id)
+print(response)
+```
+
+### Verify an Identity
+
+```python
+identity_id = "12345"
+response = transport.identity.verify(identity_id)
+print(response)
 ```
 
 ### Error Handling
@@ -141,9 +189,9 @@ Creates a new email instance with the following parameters:
 - `cc` (list, optional): List of CC email addresses.
 - `bcc` (list, optional): List of BCC email addresses.
 - `variables` (dict, optional): Variables for email templates.
-- `templateId` (str, optional): Template ID for the email.
-- `replyTo` (str, optional): Reply-to email address.
-- `inReplyTo` (str, optional): Message ID this email is replying to.
+- `template_id` (str, optional): Template ID for the email.
+- `reply_to` (str, optional): Reply-to email address.
+- `in_reply_to` (str, optional): Message ID this email is replying to.
 
 ### `MailClient.attach_file(path, mimetype=None)`
 

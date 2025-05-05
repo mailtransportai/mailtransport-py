@@ -1,4 +1,5 @@
 from .mail import MailClient
+from .identity import IdentityClient
 
 
 class MailTransportClient(MailClient):
@@ -10,3 +11,6 @@ class MailTransportClient(MailClient):
         self.api_key = api_key
         self.base_url = "https://api.mailtransportai.com/api/v1"
         self.mail_init = False
+        self.identity = IdentityClient(
+            api_key=api_key
+        )
